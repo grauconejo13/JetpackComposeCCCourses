@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -57,7 +58,7 @@ fun Navigation() {
             Screen.DetailScreen.route + "/{description}",
             arguments = listOf(navArgument("description") { type = NavType.StringType })
         ) { entry ->
-            DetailScreen(description = entry.arguments?.getString("description"))
+            DetailScreen(description = entry.arguments?.getString("description"), navController)
         }
     }
 }
@@ -91,8 +92,10 @@ fun MainScreen(navController: NavController) {
                     contentDescription = "Semester 4 Courses Image",
                     modifier = Modifier
                         .size(300.dp)
-                        .clickable{val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                            context.startActivity(intent)},
+                        .clickable {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            context.startActivity(intent)
+                        },
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -140,7 +143,7 @@ fun OptionScreen(navController: NavController) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(212,223,56))
+            .background(Color(212, 223, 56))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -207,30 +210,63 @@ fun SoftwareCourseItem(courseName: String, onItemClick: () -> Unit) {
 }
 
 @Composable
-fun DetailScreen(description: String?) {
+fun DetailScreen(description: String?, navController: NavController) {
 
-        Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color(69, 69, 70))
-    ) {
-        Surface(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color(0xFF454546))// Equivalent to RGB(69, 69, 70)
+                .padding(horizontal = 16.dp),// Add some padding around the column
+            verticalArrangement = Arrangement.SpaceBetween// This will push the button to the bottom
+        ){
+         Surface(
             color = Color.LightGray,
             border = BorderStroke(2.dp, color = Color.Black),
             shape = RoundedCornerShape(3.dp),
-        ){
-        Text(
-            text = "Course Description: $description",
-            fontWeight = FontWeight.Medium,
-            fontSize = 20.sp,
-            color = Color.Black,
-            textAlign = TextAlign.Left,
-            fontFamily = FontFamily.SansSerif,
-            modifier = Modifier
-                .padding(15.dp)
-                .background(color = Color.LightGray)
-        )}
+             modifier = Modifier.weight(1f)// This makes the Surface fill the available space, pushing the button to the bottom
+        ) {
+            Text(
+                text = "Course Description: $description",
+                fontWeight = FontWeight.Medium,
+                fontSize = 20.sp,
+                color = Color.Black,
+                textAlign = TextAlign.Left,
+                fontFamily = FontFamily.SansSerif,
+                modifier = Modifier
+                    .padding(15.dp)
+                    .fillMaxWidth()// Ensure the text fills the width of its container
+                    .background(color = Color.LightGray)
+                )
+            }
+            // Button outside the Surface, still within the Column
+            val interactionSource = remember { MutableInteractionSource() }
+            val isPressed by interactionSource.collectIsPressedAsState()
+
+            val clickedColor = if (isPressed) Color.Blue else Color(69, 69, 70)
+            Button(
+                onClick = {
+                    navController.navigate(Screen.OptionScreen.route)
+                },
+                interactionSource = interactionSource,
+                modifier = Modifier
+                    .padding(all = 3.dp),
+                elevation = null,
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = clickedColor
+                )
+
+            ) {
+                val txtColor = if (isPressed) Color.Red else Color(212, 223, 56)
+                Text(
+                    text = "Back to Software Courses",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.End,
+                    color = txtColor,
+                    fontFamily = FontFamily.Monospace
+                )
+        }
     }
 }
 
